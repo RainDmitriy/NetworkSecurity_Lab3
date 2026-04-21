@@ -40,7 +40,7 @@ test: test1 test2 test3 test4
 test1:
 	@echo ""
 	@echo "════════════════════════════════════════"
-	@echo "  TEST 1: Telnet block from 10.10.10.10"
+	@echo "  TEST 1: Telnet block from 10.77.1.10"
 	@echo "════════════════════════════════════════"
 	@bash tests/test_telnet_block.sh
 
