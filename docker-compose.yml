@@ -1,0 +1,89 @@
+services:
+  client:
+    build: ./client
+    container_name: lab-client
+    hostname: client
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    networks:
+      internal:
+        ipv4_address: 10.77.1.2
+    depends_on:
+      firewall:
+        condition: service_healthy
+    stdin_open: true
+    tty: true
+
+  client2:
+    build: ./client
+    container_name: lab-client2
+    hostname: client2
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    networks:
+      internal:
+        ipv4_address: 10.77.1.10
+    depends_on:
+      firewall:
+        condition: service_healthy
+    stdin_open: true
+    tty: true
+
+  firewall:
+    build: ./firewall
+    container_name: lab-firewall
+    hostname: firewall
+    privileged: true
+    sysctls:
+      - net.ipv4.ip_forward=1
+    networks:
+      internal:
+        ipv4_address: 10.77.1.1
+      external:
+        ipv4_address: 10.78.1.1
+    stdin_open: true
+    tty: true
+    healthcheck:
+      test: ["CMD", "ping", "-c", "1", "-W", "1", "127.0.0.1"]
+      interval: 3s
+      timeout: 2s
+      retries: 3
+
+  server:
+    build: ./server
+    container_name: lab-server
+    hostname: server
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+    networks:
+      external:
+        ipv4_address: 10.78.1.2
+    depends_on:
+      firewall:
+        condition: service_healthy
+    stdin_open: true
+    tty: true
+
+networks:
+  internal:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.77.1.0/24
+          gateway: 10.77.1.254
+    driver_opts:
+      com.docker.network.bridge.enable_ip_masquerade: "false"
+
+  external:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.78.1.0/24
+          gateway: 10.78.1.254
+    driver_opts:
+      com.docker.network.bridge.enable_ip_masquerade: "false"
